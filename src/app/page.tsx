@@ -214,6 +214,23 @@ export default function Home() {
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
   const [showObsidianInfo, setShowObsidianInfo] = useState(false);
 
+  const [patients, setPatients] = useState<any[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+
+  useEffect(() => {
+    // Fetch patients if user is logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        supabase.from('patients').select('*').eq('doctor_id', session.user.id).then(({ data }) => {
+          if (data && data.length > 0) {
+            setPatients(data);
+            setSelectedPatientId(data[0].id);
+          }
+        });
+      }
+    });
+  }, []);
+
   // Computer Vision Hand Tracking State
   const [isTrackerActive, setIsTrackerActive] = useState(false);
   const [cvStimmingLevel, setCvStimmingLevel] = useState<number>(0);
