@@ -15,6 +15,7 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
   const [notes, setNotes] = useState<any[]>([]);
   const [selectedNote, setSelectedNote] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [newPatientName, setNewPatientName] = useState('');
 
   const fetchData = async () => {
     // We only fetch patients assigned to this doctor
@@ -29,6 +30,21 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
     }
     
     setLoading(false);
+  };
+
+  const handleAddPatient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPatientName.trim() || !session) return;
+    
+    const { data, error } = await supabase.from('patients').insert({
+      name: newPatientName,
+      doctor_id: session.user.id
+    }).select();
+    
+    if (data) {
+      setPatients([...patients, data[0]]);
+      setNewPatientName('');
+    }
   };
 
   useEffect(() => {
@@ -97,7 +113,21 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
           
           {/* Left Pane: File Tree */}
           <div style={{ width: '250px', borderRight: '1px solid #334155', padding: '20px', overflowY: 'auto' }}>
-            {loading ? <p>Loading...</p> : patients.length === 0 ? <p style={{ opacity: 0.5 }}>No patients assigned.</p> : (
+            
+            <form onSubmit={handleAddPatient} style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
+              <input 
+                type="text" 
+                placeholder="New Patient Name" 
+                value={newPatientName}
+                onChange={e => setNewPatientName(e.target.value)}
+                style={{ flex: 1, padding: '6px', background: '#1e293b', border: '1px solid #334155', color: 'white', borderRadius: '4px', fontSize: '0.8rem' }}
+              />
+              <button type="submit" style={{ padding: '6px 10px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                +
+              </button>
+            </form>
+
+            {loading ? <p>Loading...</p> : patients.length === 0 ? <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>No patients assigned. Add one above.</p> : (
               patients.map(patient => (
                 <div key={patient.id} style={{ marginBottom: '15px' }}>
                   <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', textTransform: 'uppercase' }}>{patient.name}</h3>
