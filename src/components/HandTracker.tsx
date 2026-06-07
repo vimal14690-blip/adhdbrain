@@ -194,8 +194,8 @@ export default function HandTracker({ isActive, onToggle, onStimmingDetected, on
       setupCameraAndModel();
     } else {
       // Cleanup
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (stream as any) {
+        (stream as any).getTracks().forEach((track: any) => track.stop());
       }
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
@@ -205,8 +205,8 @@ export default function HandTracker({ isActive, onToggle, onStimmingDetected, on
     }
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      if (stream as any) {
+        (stream as any).getTracks().forEach((track: any) => track.stop());
       }
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
