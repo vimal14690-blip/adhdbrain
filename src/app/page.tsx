@@ -27,6 +27,7 @@ import styles from './page.module.css';
 
 // Dynamically import Canvas and HandTracker with SSR disabled to avoid issues during SSR
 const HandTracker = dynamic(() => import('@/components/HandTracker'), { ssr: false });
+const BrainPopup = dynamic(() => import('@/components/BrainPopup'), { ssr: false });
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), {
   ssr: false,
   loading: () => (
@@ -213,18 +214,28 @@ export default function Home() {
 
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
   const [showObsidianInfo, setShowObsidianInfo] = useState(false);
+  const [showBrainPopup, setShowBrainPopup] = useState(false);
 
   const [patients, setPatients] = useState<any[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('');
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     // Fetch patients if user is logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        supabase.from('patients').select('*').eq('doctor_id', session.user.id).then(({ data }) => {
-          if (data && data.length > 0) {
-            setPatients(data);
-            setSelectedPatientId(data[0].id);
+        setSession(session);
+        supabase.from('profiles').select('role').eq('id', session.user.id).single().then(({ data: profileData }) => {
+          if (profileData) setUserRole(profileData.role);
+          
+          if (profileData?.role === 'doctor') {
+            supabase.from('patients').select('*').eq('doctor_id', session.user.id).then(({ data }) => {
+              if (data && data.length > 0) {
+                setPatients(data);
+                setSelectedPatientId(data[0].id);
+              }
+            });
           }
         });
       }
@@ -536,6 +547,10 @@ export default function Home() {
 
   const generateObsidianMarkdown = async () => {
     if (!result || !activeNetwork) return;
+    if (userRole !== 'doctor') {
+      alert("Only clinicians can save clinical notes.");
+      return;
+    }
     
     const dateStr = new Date().toISOString().split('T')[0];
     const timeStr = new Date().toLocaleTimeString();
@@ -590,15 +605,12 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
         content: frontmatter
       });
       if (!error) {
-        alert('Saved to Brain2 successfully!');
+        alert('Saved to Clinician Vault successfully!');
       } else {
         alert('Error saving to DB: ' + error.message);
       }
     } else {
-      // Fallback for non-logged in users (local download)
-      const encodedTitle = encodeURIComponent(`NeuroBrain_Analysis_${dateStr}`);
-      const encodedContent = encodeURIComponent(frontmatter);
-      window.open(`obsidian://new?name=${encodedTitle}&content=${encodedContent}`, '_blank');
+      alert("Please select a patient to save this clinical note.");
     }
   };
 
@@ -684,9 +696,17 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
           </div>
         </div>
 
-        <div className={styles.statusIndicator}>
-          <div className={isApiKeyMissing ? styles.statusDotWarning : styles.statusDot} />
-          <span>{isApiKeyMissing ? "API KEY MISSING" : "CLINICAL ENGINE ACTIVE"}</span>
+        <div className={styles.headerRight}>
+          {userRole === 'doctor' && (
+             <button onClick={() => setShowBrainPopup(true)} className={styles.obsidianBtn} style={{ marginRight: '15px' }}>
+                <Brain size={16} />
+                Second Brain
+             </button>
+          )}
+          <div className={styles.statusIndicator}>
+            <div className={isApiKeyMissing ? styles.statusDotWarning : styles.statusDot} />
+            <span>{isApiKeyMissing ? "API KEY MISSING" : "CLINICAL ENGINE ACTIVE"}</span>
+          </div>
         </div>
       </header>
 
@@ -1779,13 +1799,26 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                   </select>
                 )}
                 <div className={styles.obsidianActions}>
-                  <button onClick={generateObsidianMarkdown} className={styles.obsidianBtn}>
-                    <BookOpen size={14} />
-                    Save to Note
-                  </button>
-                  <button onClick={generateObsidianCanvas} className={styles.obsidianBtnOutline}>
-                    <Download size={14} />
-                    Download Canvas Map
+                  {userRole === 'doctor' ? (
+                    <button onClick={generateObsidianMarkdown} className={styles.obsidianBtn}>
+                      <BookOpen size={14} />
+                      Save to Note
+                    </button>
+                  ) : (
+                    <button disabled className={styles.obsidianBtnOutline} style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+                      <ShieldAlert size={14} />
+                      Doctor Access Only
+                    </button>
+                  )}
+                  {userRole === 'doctor' && (
+                    <button onClick={generateObsidianCanvas} className={styles.obsidianBtnOutline}>
+                      <Download size={14} />
+                      Download Canvas Map
+                    </button>
+                  )}
+                  <button onClick={() => setShowBrainPopup(true)} className={styles.obsidianBtn} style={{ background: 'var(--primary)', color: '#000' }}>
+                    <Sparkles size={14} />
+                    Second Brain
                   </button>
                 </div>
               </div>
@@ -1810,8 +1843,8 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
             </p>
           </div>
         </section>
-
       </main>
+      {showBrainPopup && <BrainPopup session={session} onClose={() => setShowBrainPopup(false)} />}
     </div>
   );
 }
