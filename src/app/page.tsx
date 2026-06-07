@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import { supabase } from '@/utils/supabase';
 import { 
   Brain, 
   Send, 
@@ -516,7 +517,7 @@ export default function Home() {
     }
   };
 
-  const generateObsidianMarkdown = () => {
+  const generateObsidianMarkdown = async () => {
     if (!result || !activeNetwork) return;
     
     const dateStr = new Date().toISOString().split('T')[0];
@@ -563,11 +564,25 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
 - **Agent Confidence:** ${(result.confidence * 100).toFixed(0)}%
 `;
 
-    const encodedTitle = encodeURIComponent(`NeuroBrain_Analysis_${dateStr}`);
-    const encodedContent = encodeURIComponent(frontmatter);
-    
-    // Open Obsidian URI
-    window.open(`obsidian://new?name=${encodedTitle}&content=${encodedContent}`, '_blank');
+    if (selectedPatientId) {
+      // Save directly to Supabase Brain2
+      const title = `NeuroBrain_Analysis_${dateStr}`;
+      const { error } = await supabase.from('notes').insert({
+        patient_id: selectedPatientId,
+        title: title,
+        content: frontmatter
+      });
+      if (!error) {
+        alert('Saved to Brain2 successfully!');
+      } else {
+        alert('Error saving to DB: ' + error.message);
+      }
+    } else {
+      // Fallback for non-logged in users (local download)
+      const encodedTitle = encodeURIComponent(`NeuroBrain_Analysis_${dateStr}`);
+      const encodedContent = encodeURIComponent(frontmatter);
+      window.open(`obsidian://new?name=${encodedTitle}&content=${encodedContent}`, '_blank');
+    }
   };
 
   const generateObsidianCanvas = () => {
@@ -1732,8 +1747,20 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                   </div>
                 </div>
                 <p className={styles.obsidianDesc}>
-                  Export this analysis to your local Obsidian vault to build a longitudinal database of meltdown triggers and network patterns.
+                  Export this analysis to your local Obsidian vault or securely save it to your cloud Brain2 vault.
                 </p>
+                {patients.length > 0 && (
+                  <select 
+                    value={selectedPatientId} 
+                    onChange={(e) => setSelectedPatientId(e.target.value)}
+                    style={{ marginBottom: '10px', width: '100%', padding: '8px', background: '#334155', color: 'white', border: 'none', borderRadius: '4px' }}
+                  >
+                    <option value="">Select Patient...</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                )}
                 <div className={styles.obsidianActions}>
                   <button onClick={generateObsidianMarkdown} className={styles.obsidianBtn}>
                     <BookOpen size={14} />
