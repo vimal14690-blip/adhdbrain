@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { 
   Brain, 
@@ -19,11 +19,13 @@ import {
   BookOpen,
   RotateCcw,
   Sliders,
-  FileText
+  FileText,
+  Download
 } from 'lucide-react';
 import styles from './page.module.css';
 
-// Dynamically import Canvas with SSR disabled to avoid three.js compilation issues during SSR
+// Dynamically import Canvas and HandTracker with SSR disabled to avoid issues during SSR
+const HandTracker = dynamic(() => import('@/components/HandTracker'), { ssr: false });
 const BrainCanvas = dynamic(() => import('@/components/BrainCanvas'), {
   ssr: false,
   loading: () => (
@@ -209,6 +211,30 @@ export default function Home() {
   const [inputMode, setInputMode] = useState<'questionnaire' | 'text'>('questionnaire');
 
   const [selectedHotspot, setSelectedHotspot] = useState<string | null>(null);
+  const [showObsidianInfo, setShowObsidianInfo] = useState(false);
+
+  // Computer Vision Hand Tracking State
+  const [isTrackerActive, setIsTrackerActive] = useState(false);
+  const [cvStimmingLevel, setCvStimmingLevel] = useState<number>(0);
+  // Using useRef to prevent React re-renders which destroy 60fps 3D performance
+  const handRotationRef = useRef<{x: number, y: number, z: number}>({ x: 0, y: 0, z: 1.0 });
+
+  const handleStimmingDetected = (intensity: number) => {
+    setCvStimmingLevel(intensity);
+    if (intensity > 0.5 && !isLoading) {
+      const cvPrompt = `Live Computer Vision Alert: The webcam telemetry just detected rhythmic hand-flapping / motor stimming at an intensity of ${(intensity * 100).toFixed(0)}%. Please analyze this motor mannerism.`;
+      handleAnalyze(cvPrompt);
+    }
+  };
+
+  const handleHandMove = (dx: number, dy: number, dz: number = 0) => {
+    // We mutate the ref directly. No re-renders!
+    handRotationRef.current.x += dx;
+    handRotationRef.current.y += dy;
+    
+    // Clamp zoom scale between 0.5 and 2.0
+    handRotationRef.current.z = Math.max(0.5, Math.min(2.0, handRotationRef.current.z + dz));
+  };
 
   const handleTabChange = (tab: 'clinician' | 'parent' | 'patient') => {
     setActiveTab(tab);
@@ -490,6 +516,128 @@ export default function Home() {
     }
   };
 
+  const generateObsidianMarkdown = () => {
+    if (!result || !activeNetwork) return;
+    
+    const dateStr = new Date().toISOString().split('T')[0];
+    const timeStr = new Date().toLocaleTimeString();
+    
+    const frontmatter = `---
+date: ${dateStr}
+time: ${timeStr}
+tags:
+  - neurobrain
+  - clinical_log
+  - ${activeNetwork}
+meltdownRisk: ${result.meltdownRisk}
+cognitiveLoad: ${result.cognitiveLoad}
+activeNetwork: ${activeNetwork}
+---
+
+# NeuroBrain Clinical Analysis
+*Logged on ${dateStr} at ${timeStr}*
+
+## Active Neural Pathway
+**Network:** [[${NETWORK_METADATA[activeNetwork]?.name || activeNetwork}]]
+**Regions:** ${result.regions.map(r => `[[${r}]]`).join(', ')}
+
+## Clinical Reasoning
+> ${result.reasoning}
+
+## Telemetry (SHAP Values)
+${Object.entries(result.shapValues).map(([key, val]) => {
+  const label = getFriendlySHAPLabel(key);
+  return `- **${label}**: ${val > 0 ? '+' : ''}${(Number(val) * 100).toFixed(1)}%`;
+}).join('\n')}
+
+## ADOS-2 Context
+- **Social Affect:** ${result.adosScores?.socialAffect || 'N/A'}
+- **Restricted/Repetitive Behaviors:** ${result.adosScores?.restrictedRepetitive || 'N/A'}
+- **Comparison Score:** ${result.adosScores?.comparisonScore || 'N/A'}
+
+## Guidance
+${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` : `**Parent Coping Strategy:**\n${result.parentGuidance}`}
+
+## System Confidence
+- **Cognitive Intensity:** ${(result.cognitiveLoad * 100).toFixed(0)}%
+- **Agent Confidence:** ${(result.confidence * 100).toFixed(0)}%
+`;
+
+    const encodedTitle = encodeURIComponent(`NeuroBrain_Analysis_${dateStr}`);
+    const encodedContent = encodeURIComponent(frontmatter);
+    
+    // Open Obsidian URI
+    window.open(`obsidian://new?name=${encodedTitle}&content=${encodedContent}`, '_blank');
+  };
+
+  const generateObsidianCanvas = () => {
+    if (!result || !activeNetwork) return;
+
+    // Build Obsidian Canvas JSON structure
+    const canvas = {
+      nodes: [
+        {
+          id: "node_network",
+          type: "text",
+          text: `## Active Network\n[[${NETWORK_METADATA[activeNetwork]?.name || activeNetwork}]]\nRisk: **${result.meltdownRisk.toUpperCase()}**`,
+          x: 0,
+          y: -200,
+          width: 300,
+          height: 150,
+          color: "3" // Purpleish
+        },
+        {
+          id: "node_reasoning",
+          type: "text",
+          text: `## AI Reasoning\n${result.reasoning}`,
+          x: -400,
+          y: 50,
+          width: 300,
+          height: 250,
+          color: "1" // Reddish
+        },
+        {
+          id: "node_coping",
+          type: "text",
+          text: `## Coping Strategy\n${activeTab === 'clinician' ? result.clinicianNotes : result.parentGuidance}`,
+          x: 400,
+          y: 50,
+          width: 300,
+          height: 200,
+          color: "4" // Greenish
+        }
+      ],
+      edges: [
+        {
+          id: "edge_1",
+          fromNode: "node_reasoning",
+          fromSide: "right",
+          toNode: "node_network",
+          toSide: "left",
+          label: "triggers"
+        },
+        {
+          id: "edge_2",
+          fromNode: "node_network",
+          fromSide: "right",
+          toNode: "node_coping",
+          toSide: "left",
+          label: "requires"
+        }
+      ]
+    };
+
+    const blob = new Blob([JSON.stringify(canvas, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NeuroBrain_Map_${new Date().toISOString().split('T')[0]}.canvas`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className={styles.container}>
       {/* Header Panel */}
@@ -563,6 +711,13 @@ export default function Home() {
               Free-Text Log
             </button>
           </div>
+
+          <HandTracker 
+            isActive={isTrackerActive} 
+            onToggle={() => setIsTrackerActive(!isTrackerActive)} 
+            onStimmingDetected={handleStimmingDetected} 
+            onHandMove={handleHandMove}
+          />
 
           <div className={styles.scrollableContent}>
             
@@ -1105,6 +1260,7 @@ export default function Home() {
             simScreenLight={simScreenLight}
             simBodyAgitation={simBodyAgitation}
             selectedHotspot={selectedHotspot}
+            handRotationRef={handRotationRef}
           />
 
           {/* Calming Respiration Text Guide Overlay */}
@@ -1551,6 +1707,43 @@ export default function Home() {
                 <p style={{ fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', lineHeight: 1.4 }}>
                   Trigger an intake simulation preset on the left, or input clinical telemetry to visualize network activity mapping.
                 </p>
+              </div>
+            )}
+
+            {/* Obsidian Export Widget */}
+            {result && (
+              <div className={styles.obsidianWidget}>
+                <div className={styles.obsidianHeader}>
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/1/10/2023_Obsidian_logo.svg" alt="Obsidian" width="16" height="16" style={{ opacity: 0.8 }} />
+                  <span className={styles.obsidianTitle}>Obsidian Knowledge Graph</span>
+                  <div 
+                    className={styles.infoIconContainer}
+                    onMouseEnter={() => setShowObsidianInfo(true)}
+                    onMouseLeave={() => setShowObsidianInfo(false)}
+                  >
+                    <Info size={14} className={styles.obsidianInfoIcon} />
+                    {showObsidianInfo && (
+                      <div className={styles.obsidianTooltip}>
+                        <strong>How to use:</strong><br />
+                        1. <strong>Note:</strong> Opens Obsidian automatically. To see the Knowledge Graph, click the 'Graph view' icon in Obsidian.<br />
+                        2. <strong>Canvas:</strong> Downloads a .canvas file. Drag & drop it into Obsidian's left sidebar to view the spatial map.
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className={styles.obsidianDesc}>
+                  Export this analysis to your local Obsidian vault to build a longitudinal database of meltdown triggers and network patterns.
+                </p>
+                <div className={styles.obsidianActions}>
+                  <button onClick={generateObsidianMarkdown} className={styles.obsidianBtn}>
+                    <BookOpen size={14} />
+                    Save to Note
+                  </button>
+                  <button onClick={generateObsidianCanvas} className={styles.obsidianBtnOutline}>
+                    <Download size={14} />
+                    Download Canvas Map
+                  </button>
+                </div>
               </div>
             )}
 

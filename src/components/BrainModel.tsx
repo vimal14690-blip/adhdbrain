@@ -18,6 +18,7 @@ interface BrainModelProps {
   simScreenLight?: number;
   simBodyAgitation?: number;
   selectedHotspot?: string | null;
+  handRotationRef?: React.MutableRefObject<{ x: number, y: number, z: number }>;
 }
 
 const networkIds: { [key: string]: number } = {
@@ -269,7 +270,8 @@ export default function BrainModel({
   simNoiseLevel = 20,
   simScreenLight = 20,
   simBodyAgitation = 20,
-  selectedHotspot
+  selectedHotspot,
+  handRotationRef
 }: BrainModelProps) {
   const pointsRef = useRef<THREE.Points>(null);
   const linesRef = useRef<THREE.LineSegments>(null);
@@ -277,10 +279,13 @@ export default function BrainModel({
   const linesMatRef = useRef<THREE.ShaderMaterial>(null);
   const flowPointsRef = useRef<THREE.Points>(null);
   
-  const leftShellRef = useRef<THREE.Mesh>(null);
   const rightShellRef = useRef<THREE.Mesh>(null);
-
+  const leftShellRef = useRef<THREE.Mesh>(null);
   const shakeGroupRef = useRef<THREE.Group>(null);
+  
+  // Ref for smoothed physical momentum
+  const smoothedRot = useRef<{x: number, y: number, scale: number}>({ x: 0, y: 0, scale: 1.0 });
+
   const breathingRingsRef = useRef<THREE.Group>(null);
   const hotspotsGroupRef = useRef<THREE.Group>(null);
 
@@ -631,35 +636,55 @@ export default function BrainModel({
   useFrame((state, delta) => {
     const elapsed = state.clock.getElapsedTime();
 
-    if (pointsRef.current && autoRotate) {
-      pointsRef.current.rotation.y = elapsed * 0.05;
-      pointsRef.current.rotation.x = Math.sin(elapsed * 0.02) * 0.08;
-    }
-
-    if (linesRef.current && autoRotate) {
-      linesRef.current.rotation.y = elapsed * 0.05;
-      linesRef.current.rotation.x = Math.sin(elapsed * 0.02) * 0.08;
-    }
+    const baseRotY = autoRotate ? elapsed * 0.05 : 0;
+    const baseRotX = autoRotate ? Math.sin(elapsed * 0.02) * 0.08 : 0;
     
-    if (leftShellRef.current && rightShellRef.current && autoRotate) {
-      const rotY = elapsed * 0.05;
-      const rotX = Math.sin(elapsed * 0.02) * 0.08;
+    // Read raw target values from ref
+    const targetManualRotY = handRotationRef ? handRotationRef.current.x * 3.5 : 0;
+    const targetManualRotX = handRotationRef ? handRotationRef.current.y * 3.5 : 0;
+    const targetScale = handRotationRef ? handRotationRef.current.z : 1.0;
+
+    // Apply Linear Interpolation (Lerp) for physical momentum and smoothness
+    smoothedRot.current.y = THREE.MathUtils.lerp(smoothedRot.current.y, targetManualRotY, 0.1);
+    smoothedRot.current.x = THREE.MathUtils.lerp(smoothedRot.current.x, targetManualRotX, 0.1);
+    smoothedRot.current.scale = THREE.MathUtils.lerp(smoothedRot.current.scale, targetScale, 0.1);
+
+    const targetRotY = baseRotY + smoothedRot.current.y;
+    const targetRotX = baseRotX + smoothedRot.current.x;
+    const currentScale = smoothedRot.current.scale;
+
+    if (leftShellRef.current && rightShellRef.current) {
+      leftShellRef.current.rotation.y = targetRotY;
+      leftShellRef.current.rotation.x = targetRotX;
+      leftShellRef.current.scale.setScalar(currentScale);
       
-      leftShellRef.current.rotation.y = rotY;
-      leftShellRef.current.rotation.x = rotX;
-      
-      rightShellRef.current.rotation.y = rotY;
-      rightShellRef.current.rotation.x = rotX;
+      rightShellRef.current.rotation.y = targetRotY;
+      rightShellRef.current.rotation.x = targetRotX;
+      rightShellRef.current.scale.setScalar(currentScale);
     }
 
-    if (flowPointsRef.current && autoRotate) {
-      flowPointsRef.current.rotation.y = elapsed * 0.05;
-      flowPointsRef.current.rotation.x = Math.sin(elapsed * 0.02) * 0.08;
+    if (pointsRef.current) {
+      pointsRef.current.rotation.y = targetRotY;
+      pointsRef.current.rotation.x = targetRotX;
+      pointsRef.current.scale.setScalar(currentScale);
     }
 
-    if (hotspotsGroupRef.current && autoRotate) {
-      hotspotsGroupRef.current.rotation.y = elapsed * 0.05;
-      hotspotsGroupRef.current.rotation.x = Math.sin(elapsed * 0.02) * 0.08;
+    if (linesRef.current) {
+      linesRef.current.rotation.y = targetRotY;
+      linesRef.current.rotation.x = targetRotX;
+      linesRef.current.scale.setScalar(currentScale);
+    }
+
+    if (flowPointsRef.current) {
+      flowPointsRef.current.rotation.y = targetRotY;
+      flowPointsRef.current.rotation.x = targetRotX;
+      flowPointsRef.current.scale.setScalar(currentScale);
+    }
+
+    if (hotspotsGroupRef.current) {
+      hotspotsGroupRef.current.rotation.y = targetRotY;
+      hotspotsGroupRef.current.rotation.x = targetRotX;
+      hotspotsGroupRef.current.scale.setScalar(currentScale);
     }
 
     // Update flow particles positions and opacities

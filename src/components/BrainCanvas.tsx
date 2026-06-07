@@ -21,6 +21,7 @@ interface BrainCanvasProps {
   simScreenLight?: number;
   simBodyAgitation?: number;
   selectedHotspot?: string | null;
+  handRotationRef?: React.MutableRefObject<{ x: number, y: number, z: number }>;
 }
 
 const networkColors: { [key: string]: string } = {
@@ -78,7 +79,8 @@ export default function BrainCanvas({
   simNoiseLevel = 20,
   simScreenLight = 20,
   simBodyAgitation = 20,
-  selectedHotspot
+  selectedHotspot,
+  handRotationRef
 }: BrainCanvasProps) {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -199,6 +201,7 @@ export default function BrainCanvas({
                 simScreenLight={simScreenLight}
                 simBodyAgitation={simBodyAgitation}
                 selectedHotspot={selectedHotspot}
+                handRotationRef={handRotationRef}
               />
             </group>
           </>
@@ -217,6 +220,7 @@ export default function BrainCanvas({
               simScreenLight={simScreenLight}
               simBodyAgitation={simBodyAgitation}
               selectedHotspot={selectedHotspot}
+              handRotationRef={handRotationRef}
             />
           </group>
         )}
