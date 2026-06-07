@@ -16,19 +16,13 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
   const [selectedNote, setSelectedNote] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (session?.user) {
-      fetchData();
-    }
-  }, [session]);
-
   const fetchData = async () => {
     // We only fetch patients assigned to this doctor
     const { data: pts } = await supabase.from('patients').select('*').eq('doctor_id', session.user.id);
     if (pts) setPatients(pts);
 
     // Fetch notes related to those patients
-    const patientIds = pts?.map(p => p.id) || [];
+    const patientIds = pts?.map((p: any) => p.id) || [];
     if (patientIds.length > 0) {
       const { data: nts } = await supabase.from('notes').select('*').in('patient_id', patientIds);
       if (nts) setNotes(nts);
@@ -36,6 +30,14 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
     
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (session?.user) {
+      fetchData();
+    }
+  }, [session]);
+
+
 
   const graphNodes = new Map();
   const graphLinks: any[] = [];
