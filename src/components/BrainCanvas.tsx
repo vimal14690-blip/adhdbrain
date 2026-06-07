@@ -138,10 +138,11 @@ export default function BrainCanvas({
   }, [activeNetwork]);
 
   // Alert triggers alarm light on salience overload (SN) or high agitation
-  const isAlarmActive = activeNetwork === 'SN' || simNoiseLevel > 60 || simBodyAgitation > 60;
+  const isStorm = simNoiseLevel > 80 || simBodyAgitation > 80 || simScreenLight > 80;
+  const isAlarmActive = activeNetwork === 'SN' || isStorm;
 
   return (
-    <div className={styles.canvasContainer} style={backgroundStyle}>
+    <div className={`${styles.canvasContainer} ${isStorm ? styles.stormBackground : ''}`} style={isStorm ? {} : backgroundStyle}>
       {/* Side-by-side Overlay Labels in Compare Mode */}
       {compareMode && (
         <div className={styles.compareHeader}>

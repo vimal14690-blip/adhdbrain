@@ -1527,3 +1527,13 @@
 }
 
 
+
+.stormBackground {
+  background: radial-gradient(circle, rgba(160, 10, 10, 0.95) 0%, rgba(30, 0, 0, 1) 100%) !important;
+  animation: stormPulse 0.15s infinite alternate;
+}
+
+@keyframes stormPulse {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.5) contrast(1.2); }
+}

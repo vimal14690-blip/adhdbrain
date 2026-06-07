@@ -83,38 +83,38 @@ const PRESETS = [
 
 const NETWORK_METADATA: { [key: string]: { name: string; desc: string; regions: string } } = {
   DMN: { 
-    name: "Dream Station 💭", 
-    desc: "Active during calm mind-wandering, resting, and imagining creative ideas.", 
+    name: "Default Mode Network (DMN) 💭", 
+    desc: "Under-connectivity in ASD often relates to challenges in 'Theory of Mind', social imagination, and internal self-reflection.", 
     regions: "Medial Prefrontal Cortex, Posterior Cingulate, Angular Gyrus"
   },
   FPN: { 
-    name: "Captain Focus 🧩", 
-    desc: "Helps you solve puzzles, direct your attention, and plan what to do next.",
+    name: "Frontoparietal Network (FPN) 🧩", 
+    desc: "Executive Control. Over-reliance here in ASD often compensates for social-intuitive deficits by forcing 'manual' logical processing of social cues.",
     regions: "Dorsolateral Prefrontal Cortex, Posterior Parietal Cortex"
   },
   SN: { 
-    name: "Sensory Alert Hub ⚡", 
-    desc: "Your body's sensory compass. It alerts you to loud sounds or feelings and helps switch attention.",
+    name: "Salience Network (SN) ⚡", 
+    desc: "The sensory threat alert system. Hyper-reactivity here causes severe autonomic meltdowns when the environment becomes unpredictable or overwhelming.",
     regions: "Anterior Insula, Dorsal Anterior Cingulate Cortex"
   },
   DAN: { 
-    name: "Laser Search 🔍", 
-    desc: "Coordinates where your eyes look and locks onto targets during games and tasks.",
+    name: "Dorsal Attention Network (DAN) 🔍", 
+    desc: "Controls voluntary visual search. In ASD, intensely focused interests or 'hyper-focus' heavily recruits this network.",
     regions: "Frontal Eye Fields, Intraparietal Sulcus"
   },
   VN: { 
-    name: "Movie Screen 🎨", 
-    desc: "Processes colors, animations, shapes, and shifts in screen brightness.",
+    name: "Visual Network (VN) 🎨", 
+    desc: "Processes visual input. Atypicalities often cause hyper-fixation on spinning objects, patterns, or extreme sensitivity to fluorescent lighting.",
     regions: "Primary Occipital Cortex, Striate Area"
   },
   AN: { 
-    name: "Sound Receiver 🎵", 
-    desc: "Tunes into sounds, music, voices, or background hums in your room.",
+    name: "Auditory Network (AN) 🎵", 
+    desc: "Processes sound. In ASD, impaired filtering causes painful hypersensitivity to background noises (e.g., vacuums, crowds).",
     regions: "Heschl's Gyrus, Superior Temporal Gyrus"
   },
   SMN: { 
-    name: "Movement Engine 🏃", 
-    desc: "Active during body movements like rocking, flapping, or playing, helping you stay comfortable.",
+    name: "Somatomotor Network (SMN) 🏃", 
+    desc: "Controls movement. In ASD, this drives self-regulating repetitive motor 'stimming' (rocking, hand-flapping) to manage sensory load.",
     regions: "Precentral Gyrus, Postcentral Gyrus, Supplementary Motor Area"
   }
 };
@@ -130,65 +130,65 @@ const PATIENT_EMOJIS = [
 
 const NETWORK_ANALOGIES: { [key: string]: { parent: string; child: string } } = {
   DMN: {
-    parent: "The Dream Station (DMN) acts as the brain's baseline resting state. It triggers during mind-wandering, introspection, and processing creative thoughts when the child is not focused on an external task.",
-    child: "Dream Station Mode! 💭 This is when your mind wanders off, thinking about fun stories, memories, or just relaxing like floating in space."
+    parent: "The Default Mode Network (DMN) manages 'Theory of Mind'—the ability to intuit what others are thinking or feeling. In ASD, lowered connectivity here explains why social imagination and predicting social cues can feel like a foreign language.",
+    child: "Social Imagination! 💭 This part of the brain helps us guess what our friends are feeling. Sometimes it's a bit quiet, so we have to use our logic brain to figure out social puzzles."
   },
   FPN: {
-    parent: "Captain Focus (FPN) is the executive coordinator. It directs attention, supports goal-oriented task planning (like puzzles), and regulates cognitive focus.",
-    child: "Captain Focus Mode! 🧩 Your brain's captain is steering the ship, helping you solve puzzles, sort shapes, and pay close attention."
+    parent: "The Frontoparietal Network (FPN) is the brain's executive control center. Children with ASD often rely heavily on this logical network to 'manually' process social interactions that neurotypical brains process intuitively via the DMN.",
+    child: "Captain Focus Mode! 🧩 Your brain's captain is steering the ship, using super-strong logic and rules to understand the world and solve puzzles."
   },
   SN: {
-    parent: "The Sensory Alert Hub (SN) is the brain's sensory threat alert system. It flags unexpected environmental shifts, acoustic spikes, or internal distress, triggering autonomic stress.",
-    child: "Sensory Alert Mode! ⚡ Your body compass is letting you know that things are a bit too busy or loud, reminding us to take a quiet break."
+    parent: "The Salience Network (SN) is the threat-alert system. In ASD, this network is often hyper-reactive, interpreting loud noises or routine changes as physical threats, triggering sudden 'fight or flight' meltdowns.",
+    child: "Sensory Alert Mode! ⚡ Your body's alarm system is very sensitive! It acts like a superhero trying to protect you, but sometimes it rings too loudly when it's just a vacuum cleaner."
   },
   DAN: {
-    parent: "Laser Search (DAN) manages voluntary visual search. It locks onto specific targets and coordinates tracking during focused search therapies.",
-    child: "Laser Search Mode! 🔍 Your brain is searching for specific targets, like playing a game of Hide and Seek with your eyes."
+    parent: "The Dorsal Attention Network (DAN) handles sustained visual attention. Intense, passionate 'special interests' (hyper-focus) heavily engage this network, allowing the child to study a topic for hours without fatigue.",
+    child: "Laser Search Mode! 🔍 Your brain is using its superpower focus to learn everything it can about your favorite special interest!"
   },
   VN: {
-    parent: "The Movie Screen (VN) processes screen inputs, visual stims, and shifts in ambient lighting.",
-    child: "Movie Screen Mode! 🎨 Your brain is busy painting pictures and watching colors, patterns, or videos."
+    parent: "The Visual Network (VN) processes raw sight. Atypical filtering here can cause the child to seek out highly repetitive visual stims (like spinning fans) or suffer distress from fluorescent lighting.",
+    child: "Movie Screen Mode! 🎨 Your brain loves watching beautiful patterns, spinning wheels, and bright colors to feel calm and happy."
   },
   AN: {
-    parent: "The Sound Receiver (AN) handles sound frequencies and sound localization, and acts as the gatekeeper for acoustic sensitivities.",
-    child: "Sound Receiver Mode! 🎵 Your ears are tuning into sounds, listening to music, voices, or background hums."
+    parent: "The Auditory Network (AN) handles sound. Without typical sensory gating, all background sounds (clocks, distant traffic, conversations) are processed at equal volume, leading to rapid sensory exhaustion.",
+    child: "Sound Receiver Mode! 🎵 Your ears are super-powered and can hear everything all at once! Sometimes wearing headphones helps give your superpower a rest."
   },
   SMN: {
-    parent: "The Movement Engine (SMN) controls body movements, spatial actions, and physical motor stimming (like hand-flapping or rocking) which serve to regulate intense sensory loads.",
-    child: "Movement Engine Mode! 🏃 Your body is moving, rocking, or hand-flapping to express energy and help you feel safe and comfortable."
+    parent: "The Somatomotor Network (SMN) controls movement. Repetitive motor behaviors (stimming like hand-flapping or rocking) are driven by this network to self-soothe and disperse overwhelming sensory energy.",
+    child: "Movement Engine Mode! 🏃 Your body is moving, rocking, or hand-flapping! This is your body's special way of releasing energy and feeling safe."
   }
 };
 
 const LOBE_DETAILS: { [key: string]: { name: string; emoji: string; desc: string; fact: string } } = {
   frontal: {
-    name: "Frontal Lobe",
+    name: "Prefrontal Cortex (FPN)",
     emoji: "🧩",
-    desc: "Where 'Captain Focus' lives! It helps you plan, choose, solve puzzles, and make decisions.",
-    fact: "It's like the steering wheel of your brain ship!"
+    desc: "The brain's executive control center. In ASD, this area often works overtime to 'manually' process social interactions that neurotypical brains process intuitively.",
+    fact: "Intense focus on special interests relies heavily on this lobe's executive power!"
   },
   temporal: {
-    name: "Temporal Lobe",
-    emoji: "🎵",
-    desc: "Your brain's Sound Receiver. It processes music, voices, sounds, and speech.",
-    fact: "It lets you enjoy your favorite songs and notice calming hums!"
+    name: "Temporal Lobe & Amygdala",
+    emoji: "⚡",
+    desc: "Houses the auditory cortex and the Amygdala (the threat detector). Hyper-reactivity here explains sudden sensory meltdowns to loud noises.",
+    fact: "Noise-cancelling headphones directly reduce stress signals processed in this area."
   },
   occipital: {
     name: "Occipital Lobe",
     emoji: "🎨",
-    desc: "Your brain's Movie Screen. It takes what your eyes see and paints it in beautiful colors and shapes.",
-    fact: "It lights up when you watch a cool cartoon or play a visual game!"
+    desc: "Your brain's visual processor. Differences in filtering here can cause distress from fluorescent lights, or a deep love for visually spinning objects.",
+    fact: "Visual stimming (like watching a spinning fan) helps self-soothe this lobe."
   },
   parietal: {
     name: "Parietal Lobe",
     emoji: "🏃",
-    desc: "Your Movement Engine. It handles touch, movement, and helps you know where your body is in space.",
-    fact: "It coordinates rocking, clapping, or stretching to help you feel grounded and safe!"
+    desc: "The Somatosensory engine. It handles physical touch and proprioception (knowing where your body is in space).",
+    fact: "Deep pressure therapy (like a weighted blanket) sends calming signals directly here."
   },
   limbic: {
-    name: "Limbic Core",
-    emoji: "⚡",
-    desc: "The Sensory Alert Hub. It acts like a compass for your feelings and sounds the alarm when things get too overwhelming.",
-    fact: "Applying a weighted blanket or doing calm breathing gives this core a warm, cozy hug!"
+    name: "Limbic Core & Cerebellum",
+    emoji: "🧠",
+    desc: "Deep emotion and motor coordination. Atypical cerebellar development is strongly linked to motor stimming (hand-flapping, rocking) as a self-regulation tool.",
+    fact: "Rhythmic rocking provides vestibular feedback that calms the entire limbic system."
   }
 };
 
@@ -728,7 +728,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                 {/* CLINICIAN INTERACTIVE QUESTIONS */}
                 {activeTab === 'clinician' && (
                   <>
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary)', margin: '0 0 10px 0' }}>ADOS-2 Social Affect (SA)</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary)', margin: '0 0 10px 0' }}>Target 1: Behavioral & Motor (CV Tracking)</h3>
                     
                     <div className={styles.formGroup}>
                       <label className={styles.inputLabel}>Joint Attention Focus</label>
@@ -784,7 +784,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                       </p>
                     </div>
 
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-sn)', margin: '15px 0 10px 0' }}>CARS-2 Restricted/Repetitive (RRB)</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-sn)', margin: '15px 0 10px 0' }}>Target 2: Physiological & Sensory (Wearables)</h3>
 
                     <div className={styles.formGroup}>
                       <label className={styles.inputLabel}>Motor Mannerisms</label>
@@ -840,7 +840,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                       </p>
                     </div>
 
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#fff', margin: '15px 0 10px 0' }}>Speech & Autonomic Vagal Telemetry</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#fff', margin: '15px 0 10px 0' }}>Target 3: Routine & Regulation</h3>
 
                     <div className={styles.formGroup}>
                       <label className={styles.inputLabel}>Vocal Speech Patterns</label>
@@ -881,7 +881,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                 {/* PARENT INTERACTIVE QUESTIONS */}
                 {activeTab === 'parent' && (
                   <>
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary)', margin: '0 0 10px 0' }}>1. Environmental Stressors</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-sn)', margin: '0 0 10px 0' }}>Target 2: Physiological & Sensory (Environment)</h3>
                     <div className={styles.checkboxLabelGroup}>
                       <label className={styles.checkboxContainer}>
                         <input 
@@ -914,7 +914,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                       </label>
                     </div>
 
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-dmn)', margin: '15px 0 10px 0' }}>2. Daily Stimming & Gaze Check</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--primary)', margin: '15px 0 10px 0' }}>Target 1: Behavioral & Motor (Visual)</h3>
                     <div className={styles.checkboxLabelGroup}>
                       <label className={styles.checkboxContainer}>
                         <input 
@@ -947,7 +947,7 @@ ${activeTab === 'clinician' ? `**Clinician Notes:**\n${result.clinicianNotes}` :
                       </label>
                     </div>
 
-                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-sn)', margin: '15px 0 10px 0' }}>3. Wearable Telemetry Checks</h3>
+                    <h3 style={{ fontSize: '0.82rem', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#fff', margin: '15px 0 10px 0' }}>Target 3: Routine & Regulation (Wearables)</h3>
                     <div className={styles.checkboxLabelGroup}>
                       <label className={styles.checkboxContainer}>
                         <input 

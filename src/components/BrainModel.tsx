@@ -3,6 +3,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { Html } from '@react-three/drei';
 
 interface BrainModelProps {
   activeNetwork: string | null;
@@ -1019,6 +1020,30 @@ export default function BrainModel({
                     blending={THREE.AdditiveBlending}
                   />
                 </mesh>
+                
+                {/* Glowing HTML Label */}
+                <Html position={[0, 0.15, 0]} center zIndexRange={[100, 0]}>
+                  <div style={{
+                    background: selectedHotspot === hotspot.normalizedId ? 'rgba(15, 23, 42, 0.95)' : 'rgba(15, 23, 42, 0.4)',
+                    backdropFilter: 'blur(4px)',
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    border: `1px solid ${selectedHotspot === hotspot.normalizedId ? hotspot.color : 'rgba(255,255,255,0.1)'}`,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: selectedHotspot === hotspot.normalizedId ? '13px' : '10px',
+                    fontWeight: selectedHotspot === hotspot.normalizedId ? 'bold' : 'normal',
+                    opacity: selectedHotspot === hotspot.normalizedId ? 1 : 0.5,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transform: selectedHotspot === hotspot.normalizedId ? 'translateY(-20px) scale(1.1)' : 'translateY(0px)',
+                    boxShadow: selectedHotspot === hotspot.normalizedId ? `0 4px 20px ${hotspot.color}60` : 'none',
+                    pointerEvents: 'none' // Let the 3D mesh handle clicks
+                  }}>
+                    {hotspot.name.split(' (')[0]}
+                  </div>
+                </Html>
               </mesh>
             ))}
           </group>
