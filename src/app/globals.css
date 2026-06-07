@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  --background-hex: #06060e;
+  --background: radial-gradient(circle at 50% 50%, #0c0d21 0%, #05050a 100%);
+  --foreground: #f1f1f5;
+  
+  --bg-panel: rgba(10, 10, 18, 0.65);
+  --bg-panel-hover: rgba(16, 16, 28, 0.85);
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color-glow: rgba(0, 242, 254, 0.35);
+  
+  --primary: #00f2fe;
+  --primary-rgb: 0, 242, 254;
+  --secondary: #4facfe;
+  --accent: #bd00ff;
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  
+  /* Brain Networks Styling Colors */
+  --color-dmn: #c084fc; /* Lavender / Purple */
+  --color-fpn: #22d3ee; /* Cyan / Ice Blue */
+  --color-sn: #fb923c;  /* Orange */
+  --color-dan: #60a5fa; /* Electric Blue */
+  --color-vn: #f472b6;  /* Pink */
+  --color-an: #facc15;  /* Amber / Gold */
+  --color-smn: #34d399; /* Mint / Green */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--background-hex);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom Webkit scrollbars for glassmorphic elements */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 242, 254, 0.4);
+}
+
+/* Micro-animations */
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 242, 254, 0.2), inset 0 0 5px rgba(0, 242, 254, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.4), inset 0 0 10px rgba(0, 242, 254, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 242, 254, 0.2), inset 0 0 5px rgba(0, 242, 254, 0.1);
+  }
+}
+
+@keyframes brainPulse {
+  0%, 100% { transform: scale(1); opacity: 0.95; }
+  50% { transform: scale(1.03); opacity: 1; }
+}
+
+@keyframes scanning {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
