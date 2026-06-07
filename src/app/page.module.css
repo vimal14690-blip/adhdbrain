@@ -1299,6 +1299,7 @@
   }
 
   .panel {
+    order: 2;
     padding: 16px;
     height: auto;
     max-height: none;
@@ -1312,9 +1313,9 @@
   }
 
   .centerPanel {
+    order: 1;
     height: 480px;
     min-height: 480px;
-    order: -1; /* Make Brain Canvas appear first on mobile/tablet */
   }
 }
 
@@ -1334,9 +1335,9 @@
   }
 
   .centerPanel {
+    order: 1;
     height: 420px;
     min-height: 420px;
-    order: -1;
   }
 
   /* Move absolute canvas overlays into standard layouts to prevent covering the 3D canvas */
