@@ -1,59 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { supabase } from '../utils/supabase';
+import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { X } from 'lucide-react';
 
 const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
 
-interface BrainPopupProps {
-  onClose: () => void;
-  session: any;
+export interface LocalNote {
+  id: string;
+  title: string;
+  content: string;
 }
 
-export default function BrainPopup({ onClose, session }: BrainPopupProps) {
-  const [patients, setPatients] = useState<any[]>([]);
-  const [notes, setNotes] = useState<any[]>([]);
-  const [selectedNote, setSelectedNote] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [newPatientName, setNewPatientName] = useState('');
+interface BrainPopupProps {
+  notes: LocalNote[];
+  onClose: () => void;
+}
 
-  const fetchData = async () => {
-    // We only fetch patients assigned to this doctor
-    const { data: pts } = await supabase.from('patients').select('*').eq('doctor_id', session.user.id);
-    if (pts) setPatients(pts);
-
-    // Fetch notes related to those patients
-    const patientIds = pts?.map((p: any) => p.id) || [];
-    if (patientIds.length > 0) {
-      const { data: nts } = await supabase.from('notes').select('*').in('patient_id', patientIds);
-      if (nts) setNotes(nts);
-    }
-    
-    setLoading(false);
-  };
-
-  const handleAddPatient = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPatientName.trim() || !session) return;
-    
-    const { data, error } = await supabase.from('patients').insert({
-      name: newPatientName,
-      doctor_id: session.user.id
-    }).select();
-    
-    if (data) {
-      setPatients([...patients, data[0]]);
-      setNewPatientName('');
-    }
-  };
-
-  useEffect(() => {
-    if (session?.user) {
-      fetchData();
-    }
-  }, [session]);
-
-
+export default function BrainPopup({ notes, onClose }: BrainPopupProps) {
+  const [selectedNote, setSelectedNote] = useState<LocalNote | null>(notes.length > 0 ? notes[0] : null);
 
   const graphNodes = new Map();
   const graphLinks: any[] = [];
@@ -102,7 +65,7 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
         
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '15px 20px', backgroundColor: '#020617', borderBottom: '1px solid #334155' }}>
-          <h2 style={{ color: '#38bdf8', fontSize: '1.2rem', margin: 0 }}>NeuroBrain Clinical Vault</h2>
+          <h2 style={{ color: '#38bdf8', fontSize: '1.2rem', margin: 0 }}>NeuroBrain Clinical Vault (Local Memory)</h2>
           <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
             <X size={24} />
           </button>
@@ -113,45 +76,27 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
           
           {/* Left Pane: File Tree */}
           <div style={{ width: '250px', borderRight: '1px solid #334155', padding: '20px', overflowY: 'auto' }}>
-            
-            <form onSubmit={handleAddPatient} style={{ marginBottom: '20px', display: 'flex', gap: '5px' }}>
-              <input 
-                type="text" 
-                placeholder="New Patient Name" 
-                value={newPatientName}
-                onChange={e => setNewPatientName(e.target.value)}
-                style={{ flex: 1, padding: '6px', background: '#1e293b', border: '1px solid #334155', color: 'white', borderRadius: '4px', fontSize: '0.8rem' }}
-              />
-              <button type="submit" style={{ padding: '6px 10px', background: '#38bdf8', color: '#0f172a', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                +
-              </button>
-            </form>
-
-            {loading ? <p>Loading...</p> : patients.length === 0 ? <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>No patients assigned. Add one above.</p> : (
-              patients.map(patient => (
-                <div key={patient.id} style={{ marginBottom: '15px' }}>
-                  <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', textTransform: 'uppercase' }}>{patient.name}</h3>
-                  <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0' }}>
-                    {notes.filter(n => n.patient_id === patient.id).map(note => (
-                      <li 
-                        key={note.id} 
-                        onClick={() => setSelectedNote(note)}
-                        style={{ 
-                          padding: '8px', 
-                          cursor: 'pointer', 
-                          borderRadius: '4px',
-                          backgroundColor: selectedNote?.id === note.id ? '#1e293b' : 'transparent',
-                          marginBottom: '2px',
-                          fontSize: '0.85rem',
-                          color: 'white'
-                        }}
-                      >
-                        📄 {note.title}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
+            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '15px' }}>Session Notes</h3>
+            {notes.length === 0 ? <p style={{ opacity: 0.5, fontSize: '0.9rem' }}>No notes generated yet.</p> : (
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {notes.map(note => (
+                  <li 
+                    key={note.id} 
+                    onClick={() => setSelectedNote(note)}
+                    style={{ 
+                      padding: '8px', 
+                      cursor: 'pointer', 
+                      borderRadius: '4px',
+                      backgroundColor: selectedNote?.id === note.id ? '#1e293b' : 'transparent',
+                      marginBottom: '2px',
+                      fontSize: '0.85rem',
+                      color: 'white'
+                    }}
+                  >
+                    📄 {note.title}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
@@ -160,23 +105,18 @@ export default function BrainPopup({ onClose, session }: BrainPopupProps) {
             {selectedNote ? (
               <>
                 <h1 style={{ fontSize: '1.8rem', marginBottom: '20px', color: 'white' }}>{selectedNote.title}</h1>
-                <textarea 
-                  value={selectedNote.content}
-                  onChange={async (e) => {
-                    const newContent = e.target.value;
-                    setSelectedNote({ ...selectedNote, content: newContent });
-                    setNotes(notes.map(n => n.id === selectedNote.id ? { ...n, content: newContent } : n));
-                    await supabase.from('notes').update({ content: newContent }).eq('id', selectedNote.id);
-                  }}
+                <div 
                   style={{
-                    flex: 1, width: '100%', backgroundColor: 'transparent', color: '#e2e8f0',
-                    border: 'none', outline: 'none', resize: 'none', fontFamily: 'monospace',
-                    fontSize: '0.9rem', lineHeight: '1.6'
+                    flex: 1, width: '100%', color: '#e2e8f0',
+                    fontFamily: 'monospace', fontSize: '0.9rem', lineHeight: '1.6',
+                    whiteSpace: 'pre-wrap'
                   }}
-                />
+                >
+                  {selectedNote.content}
+                </div>
               </>
             ) : (
-              <div style={{ margin: 'auto', opacity: 0.5, color: 'white' }}>Select a note to view</div>
+              <div style={{ margin: 'auto', opacity: 0.5, color: 'white' }}>Generate and save a note to view</div>
             )}
           </div>
 
